@@ -36,6 +36,27 @@ Then invoke it in Codex with:
 Use $njtech-paper to download this DOI through NJTech institutional access and verify the PDF.
 ```
 
+## Usage
+
+1. Install the skill into `~/.codex/skills/njtech-paper` on Unix-like systems, or `%USERPROFILE%\.codex\skills\njtech-paper` on Windows.
+2. Install and configure `scansci-pdf` for legal-only NJTech access. Use `download_strategy=legal_only`, NJTech WebVPN/CARSI settings, and `camofox_no_proxy=true`.
+3. Ask Codex to use the skill with a DOI:
+
+```text
+Use $njtech-paper to download https://doi.org/... through NJTech institutional access and verify the PDF.
+```
+
+4. On first use, or after the school session expires, Codex will open a visible Camofox browser. The user must log in manually on the official 南京工业大学 CAS, WebVPN, or CARSI page with their own NJTech account.
+5. If Cloudflare/Turnstile or another human verification page appears, the user must complete it manually in that browser window.
+6. After the browser reaches the publisher PDF viewer, the agent should save the PDF and verify `%PDF-`, page count, and title/DOI text before reporting success.
+
+## Credential Safety
+
+- Users need their own valid NJTech institutional account and permission to access the requested publisher resource.
+- Do not send account names, passwords, cookies, WebVPN tokens, verification codes, Cloudflare clearance values, or browser session files to the agent.
+- Do not commit browser profiles, login state, downloaded paper PDFs, signed ScienceDirect asset URLs, or any other private access artifacts to GitHub.
+- The skill should guide the browser workflow only; credentials stay between the user and the official NJTech/CARSI/WebVPN login page.
+
 ## Recommended scansci-pdf Configuration
 
 The skill assumes legal-only institutional access:

@@ -7,7 +7,7 @@ description: Use when helping Nanjing Tech University users legally download or 
 
 ## Core Rule
 
-Use only legal institutional access. Do not use Sci-Hub, LibGen, Tor, leaked links, shared cookies, saved passwords, WebVPN tokens, or Cloudflare clearance values. If authentication or a human verification page appears, ask the user to complete it in the browser.
+Use only legal institutional access. Do not use Sci-Hub, LibGen, Tor, leaked links, shared cookies, saved passwords, WebVPN tokens, or Cloudflare clearance values. If authentication or a human verification page appears, ask the user to complete it in the browser. The user may need to log in manually with their own NJTech account in the official browser page.
 
 ## Known Good Configuration
 
