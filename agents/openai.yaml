@@ -1,0 +1,4 @@
+interface:
+  display_name: "NJTech Paper"
+  short_description: "南京工业大学机构论文下载与排障流程"
+  default_prompt: "Use $njtech-paper to download a paper through NJTech institutional access and verify the PDF."
