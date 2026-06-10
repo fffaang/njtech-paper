@@ -36,6 +36,29 @@ Then invoke it in Codex with:
 Use $njtech-paper to download this DOI through NJTech institutional access and verify the PDF.
 ```
 
+## Prerequisites
+
+- Python 3.11 or newer.
+- A valid 南京工业大学 institutional account.
+- A visible browser session for NJTech CAS, WebVPN, CARSI, and possible human verification.
+- `scansci-pdf` with the Camofox and WebVPN dependencies installed.
+
+If `scansci-pdf` is not installed, or an agent reports `scansci-pdf not installed`, install it before asking the skill to download a DOI:
+
+```powershell
+python -m pip install --upgrade pip
+python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf
+```
+
+Then verify the command is available:
+
+```powershell
+scansci-pdf check
+scansci-pdf --help
+```
+
+If `python -m pip install ...` succeeds but `scansci-pdf` is still not recognized, activate the same virtual environment used for installation, reopen the terminal, or run the command through that Python environment.
+
 ## Usage
 
 1. Install the skill into `~/.codex/skills/njtech-paper` on Unix-like systems, or `%USERPROFILE%\.codex\skills\njtech-paper` on Windows.
@@ -49,6 +72,22 @@ Use $njtech-paper to download https://doi.org/... through NJTech institutional a
 4. On first use, or after the school session expires, Codex will open a visible Camofox browser. The user must log in manually on the official 南京工业大学 CAS, WebVPN, or CARSI page with their own NJTech account.
 5. If Cloudflare/Turnstile or another human verification page appears, the user must complete it manually in that browser window.
 6. After the browser reaches the publisher PDF viewer, the agent should save the PDF and verify `%PDF-`, page count, and title/DOI text before reporting success.
+
+## First-time Setup
+
+For a first-time user, ask the agent to do setup before downloading:
+
+```text
+Use $njtech-paper to install/check scansci-pdf, configure NJTech legal-only access, then download https://doi.org/10.1016/j.conbuildmat.2026.145699.
+```
+
+The agent should:
+
+1. Check whether `scansci-pdf` exists.
+2. If missing, install `scansci-pdf[cloakbrowser,vpnsci]` and `pypdf`.
+3. Set or confirm NJTech legal-only access settings.
+4. Open the official login flow only when needed; the user enters credentials manually.
+5. Download and verify the PDF.
 
 ## Credential Safety
 
@@ -112,6 +151,12 @@ Two tested ScienceDirect examples:
 
 - `10.1016/j.engfailanal.2025.110281`: downloaded as an 18-page `%PDF-1.7` file via CARSI-Camofox.
 - `10.1016/j.engstruct.2021.112190`: downloaded as an 11-page `%PDF-1.7` file via CARSI-Camofox.
+
+Additional first-time setup test case from a user report:
+
+- DOI: `10.1016/j.conbuildmat.2026.145699`
+- ScienceDirect PII: `S0950061826006008`
+- Expected path: legal NJTech/CARSI/ScienceDirect access only; do not include PDFs or signed asset links in the repository.
 
 ## Repository Contents
 

@@ -30,9 +30,33 @@ For NJTech access through `scansci-pdf`, prefer:
 
 When CARSI/OpenAthens asks for an institution, search for `nanjing tech`, then select 南京工业大学 / Nanjing Tech University.
 
+## Preflight
+
+Before trying to download a DOI, check whether `scansci-pdf` is installed and usable.
+
+1. Run `scansci-pdf check` or `scansci-pdf --help`.
+2. If the command is missing, install legal-access dependencies first:
+
+```powershell
+python -m pip install --upgrade pip
+python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf
+```
+
+3. If install succeeds but the command is unavailable, use the Python environment where it was installed, activate the virtual environment, or reopen the terminal.
+4. Confirm NJTech config after installation: `legal_only`, `njtech_vpnlib`, `carsi_idp_name=南京工业大学`, and `camofox_no_proxy=true`.
+5. Only then continue to login and download. Do not enable Sci-Hub, LibGen, or Tor to solve a missing-install problem.
+
+## If scansci-pdf Is Missing
+
+If the user report says `scansci-pdf not installed`, do not stop at a manual-browser suggestion.
+
+Recommended path: install and configure `scansci-pdf`, then handle the DOI through the normal NJTech/CARSI workflow.
+
+Temporary path: if the user refuses installation, the agent can only continue after the user manually opens the official NJTech/CARSI ScienceDirect page in a browser and reaches the PDF viewer. The agent may then help save and verify the PDF, but this is not the full automated workflow.
+
 ## Download Workflow
 
-1. Confirm `scansci-pdf` is installed and points to the intended local source/MCP config.
+1. Complete the Preflight steps above; do not skip installation checks.
 2. Confirm global config is legal-only and NJTech-specific; never enable illicit sources to solve access trouble.
 3. For ScienceDirect, try CARSI first. Use NJTech WebVPN as a fallback, but if ScienceDirect returns CPE00001 through WebVPN, switch back to CARSI instead of looping.
 4. If iKuuu or another proxy is required for Codex but blocks NJTech login, keep the proxy running for Codex and launch Camofox/Chrome with no proxy (`camofox_no_proxy=true` or `--no-proxy-server`).
@@ -62,6 +86,8 @@ In Python/Playwright, base64-encode the bytes in `page.evaluate`, decode them in
 
 | Symptom | Action |
 |---|---|
+| `scansci-pdf` not installed, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Install with `python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf`, then run `scansci-pdf check`. |
+| `pip install` succeeds but `scansci-pdf` is unavailable | Activate the same virtual environment, use the matching Python, or reopen the terminal so the scripts directory is on PATH. |
 | Chrome shows `ERR_CONNECTION_CLOSED` for NJTech WebVPN | Check proxy routing. Keep iKuuu on if Codex needs it, but launch the browser used for NJTech with no proxy. |
 | CARSI institution search cannot find 南京工业大学 | Search `nanjing tech`; Elsevier may rank unrelated Chinese/Japanese names when searching the Chinese name. |
 | WebVPN opens ScienceDirect but PDF shows CPE00001 | Treat WebVPN as unsuitable for that publisher/session and use CARSI. |
