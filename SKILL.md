@@ -15,8 +15,9 @@ Refuse requests to embed, configure, proxy, reuse for other people, share, expor
 
 | Situation | Action |
 |---|---|
-| `scansci-pdf not installed`, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run Zero-Friction Setup with the bundled bootstrap script, then run `scansci-pdf check`. |
+| `scansci-pdf not installed`, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run Zero-Friction Setup with the bundled bootstrap script and vendored wheel, then run `scansci-pdf check`. |
 | `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'` | Run Zero-Friction Setup to reinstall complete legal-access dependencies into the same Python environment. |
+| Install runs for more than 10 minutes or appears stuck | Read `bootstrap.log`, identify the stage, then retry with `--china-mirror`, `--proxy`, or a higher `--timeout`; do not silently wait forever. |
 | First use, missing local cache, or expired school session | Open the official NJTech CAS/WebVPN/CARSI flow in a visible browser and let the user log in manually. |
 | Later use on the same computer | Reuse local session if valid; do not ask the user to log in again unless validation fails or an official login/challenge page appears. |
 | User wants one NJTech account configured for everyone | Refuse. Explain that every user needs their own authorized account and that hidden shared credentials are still account sharing. |
@@ -39,8 +40,7 @@ scansci-pdf --help
 If missing, install only the legal-access dependencies:
 
 ```powershell
-python -m pip install --upgrade pip
-python -m pip install "scansci-pdf[cloakbrowser,vpnsci] @ https://github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip" pypdf
+python scripts/bootstrap_njtech_paper.py --china-mirror
 ```
 
 If install succeeds but the command is unavailable, activate the same virtual environment, use the matching Python, or reopen the terminal so the scripts directory is on `PATH`.
@@ -48,7 +48,7 @@ If install succeeds but the command is unavailable, activate the same virtual en
 If `scansci-pdf` starts but fails with `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'`, install into the same Python environment that runs `scansci-pdf`:
 
 ```powershell
-python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci] @ https://github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip" pypdf
+python scripts/bootstrap_njtech_paper.py --china-mirror
 scansci-pdf check
 ```
 
@@ -57,16 +57,29 @@ scansci-pdf check
 When `scansci-pdf` is missing or dependencies are incomplete, do not stop at manual instructions. Prefer the bundled bootstrap:
 
 ```powershell
-python scripts/bootstrap_njtech_paper.py
+python scripts/bootstrap_njtech_paper.py --china-mirror
 ```
 
 On Windows, the wrapper is also available:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/install_njtech_paper.ps1
+powershell -ExecutionPolicy Bypass -File scripts/install_njtech_paper.ps1 -ChinaMirror
 ```
 
-This supports installing scansci-pdf if missing from the fixed GitHub source, repairing partial installs, running `scansci-pdf check`, and merging NJTech `legal_only` config. The fixed source includes the Elsevier institution finder stuck fix for Cookie banner blocks institution search and Nanjing Tech result matching. It does not save your password, does not ask for NJTech credentials, and must not enable Sci-Hub, LibGen, or Tor.
+This supports installing scansci-pdf if missing, repairing partial installs, running `scansci-pdf check`, and merging NJTech `legal_only` config. It installs PyPI dependencies first, then installs the bundled `vendor/scansci_pdf-*.whl` with `--no-deps`; only if the local wheel is missing should it fall back to the fixed GitHub archive, which may be slow. The fixed source includes the Elsevier institution finder stuck fix for Cookie banner blocks institution search and Nanjing Tech result matching. It does not save your password, does not ask for NJTech credentials, and must not enable Sci-Hub, LibGen, or Tor.
+
+Use these options when setup is slow:
+
+```powershell
+python scripts/bootstrap_njtech_paper.py --china-mirror
+python scripts/bootstrap_njtech_paper.py --china-mirror --proxy http://127.0.0.1:7890
+python scripts/bootstrap_njtech_paper.py --timeout 900
+python scripts/bootstrap_njtech_paper.py --warmup-browser
+```
+
+`bootstrap.log` is written under `~/.scansci-pdf/bootstrap.log` or `%USERPROFILE%\.scansci-pdf\bootstrap.log`. If setup appears stuck for more than 10 minutes, inspect this log, retry the exact failing stage with `--china-mirror` or `--proxy`, and report the stage name instead of asking the user to wait blindly.
+
+The first Camofox launch downloads Chromium, roughly 200 MB, and caches it locally. Treat that as browser warm-up, not a pip install failure.
 
 If the bundled bootstrap script is not available, fall back to:
 
@@ -76,6 +89,16 @@ scansci-pdf check
 ```
 
 Do not repeat installation when `scansci-pdf check` passes and NJTech config is already legal-only. Continue to local private session reuse, official login if needed, and download.
+
+## Slow Install
+
+When another computer reports that Codex has been installing for half an hour, diagnose before waiting:
+
+1. Read the tail of `bootstrap.log`.
+2. If the current stage is PyPI dependencies, retry with `--china-mirror`; add `--proxy` only for pip if Codex needs a proxy.
+3. If the current stage is vendored wheel install, confirm `vendor/scansci_pdf-*.whl` and its `.sha256` exist. Do not use GitHub archive fallback unless the wheel is missing.
+4. If Python setup already completed and the browser is opening, explain that first Camofox launch downloads Chromium and can take time on a slow network.
+5. If no stage changes for more than 10 minutes, stop the current run and retry with a longer `--timeout`; do not leave the user without progress.
 
 ## Local Private Session Reuse
 
@@ -162,8 +185,10 @@ assert "expected title fragment".lower() in norm or "doi fragment" in norm
 
 | Symptom | Action |
 |---|---|
-| `scansci-pdf` not installed, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run `python scripts/bootstrap_njtech_paper.py` first. If the bootstrap script is unavailable, install with `python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf`, then run `scansci-pdf check`. |
-| `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'` | Reinstall with `python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci]" pypdf`; install into the same Python environment that runs `scansci-pdf`, then run `scansci-pdf check`. |
+| `scansci-pdf` not installed, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run `python scripts/bootstrap_njtech_paper.py --china-mirror` first. It installs PyPI dependencies and then the bundled vendored wheel. If the bootstrap script is unavailable, install with `python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf`, then run `scansci-pdf check`. |
+| `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'` | Run `python scripts/bootstrap_njtech_paper.py --china-mirror`; install into the same Python environment that runs `scansci-pdf`, then run `scansci-pdf check`. |
+| Install takes more than 10 minutes | Inspect `bootstrap.log` for the current stage. Retry with `--china-mirror`, `--proxy http://127.0.0.1:<port>`, or a higher `--timeout`. |
+| Setup finishes but first browser launch is slow | first Camofox launch downloads Chromium, about 200 MB, and caches it locally; this is separate from pip install. |
 | `pip install` succeeds but `scansci-pdf` is unavailable | Activate the same virtual environment, use the matching Python, or reopen the terminal. |
 | User is asked to log in every time | Confirm the same system user, Python environment, and `cache_dir` are being used; check whether cache was cleared or the session may expire; try local private session reuse before login. |
 | Public computer or account switch | Clear local cache/profile/cookies for that user before reuse. Never share cached login state. |

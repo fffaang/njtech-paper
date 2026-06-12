@@ -27,20 +27,19 @@ Use $njtech-paper to set up this computer for NJTech legal paper access, install
 Manual one-command setup is also available:
 
 ```powershell
-python scripts/bootstrap_njtech_paper.py
+python scripts/bootstrap_njtech_paper.py --china-mirror
 ```
 
 On Windows:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/install_njtech_paper.ps1
+powershell -ExecutionPolicy Bypass -File scripts/install_njtech_paper.ps1 -ChinaMirror
 ```
 
-The manual repair command uses the same fixed GitHub source as the bootstrap script:
+If Codex needs an HTTP proxy for package downloads, pass it only to pip setup. NJTech/Camofox login still stays no-proxy through `camofox_no_proxy=true`:
 
 ```powershell
-python -m pip install --upgrade pip
-python -m pip install "scansci-pdf[cloakbrowser,vpnsci] @ https://github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip" pypdf
+python scripts/bootstrap_njtech_paper.py --china-mirror --proxy http://127.0.0.1:7890
 ```
 
 Verify it is available:
@@ -65,17 +64,56 @@ Most users should not need to understand `pip`, extras, or config files. The ski
 The bootstrap script:
 
 - Checks Python 3.11+.
-- Installs or repairs the fixed GitHub version of `scansci-pdf[cloakbrowser,vpnsci]` and `pypdf`.
+- Installs PyPI dependencies with staged progress, timeout, retry, and optional mirror/proxy support.
+- Installs or repairs `scansci-pdf` from the bundled `vendor/scansci_pdf-*.whl` with `--no-deps`.
+- Falls back to the fixed GitHub archive only if the local vendor wheel is missing: `https://github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip`.
 - Runs `scansci-pdf check`.
 - Merges NJTech `legal_only` config into `~/.scansci-pdf/config.json`.
 - Includes the Elsevier institution finder stuck fix for Cookie banner blocks institution search and Nanjing Tech result matching.
 - Does not save your password, does not ask for NJTech credentials, and does not enable Sci-Hub, LibGen, or Tor.
+- Writes staged setup diagnostics to `~/.scansci-pdf/bootstrap.log` or `%USERPROFILE%\.scansci-pdf\bootstrap.log`.
 
 Preview the actions without changing anything:
 
 ```powershell
 python scripts/bootstrap_njtech_paper.py --dry-run
 ```
+
+Common setup options:
+
+```powershell
+python scripts/bootstrap_njtech_paper.py --china-mirror
+python scripts/bootstrap_njtech_paper.py --proxy http://127.0.0.1:7890
+python scripts/bootstrap_njtech_paper.py --timeout 900
+python scripts/bootstrap_njtech_paper.py --warmup-browser
+```
+
+`--warmup-browser` is optional. The first Camofox launch downloads Chromium, roughly 200 MB, and caches it locally. That can look like a slow install, but it is the browser warm-up stage after Python packages are installed.
+
+## Slow Install / 半小时没装好
+
+Do not let Codex wait silently for half an hour. The bootstrap script now prints and logs each stage: Python/pip check, PyPI dependencies, local vendored wheel install, NJTech config, and `scansci-pdf check`.
+
+Check the log first:
+
+```powershell
+Get-Content "$env:USERPROFILE\.scansci-pdf\bootstrap.log" -Tail 80
+```
+
+Recommended retries:
+
+```powershell
+python scripts/bootstrap_njtech_paper.py --china-mirror
+python scripts/bootstrap_njtech_paper.py --china-mirror --proxy http://127.0.0.1:7890
+powershell -ExecutionPolicy Bypass -File scripts/install_njtech_paper.ps1 -ChinaMirror -Proxy http://127.0.0.1:7890 -TimeoutSeconds 900
+```
+
+How to read the stuck point:
+
+- Stuck at PyPI dependencies: retry with `--china-mirror`, and add `--proxy` only if Codex needs it.
+- Stuck at vendored wheel install: verify `vendor/scansci_pdf-*.whl` exists; otherwise bootstrap falls back to the GitHub archive, which can be slow.
+- Stuck after setup when the browser opens: first Camofox launch downloads Chromium and caches it locally; use `--warmup-browser` when you want to do that explicitly.
+- No output for more than 10 minutes: stop the run, inspect `bootstrap.log`, and retry with the options above instead of waiting blindly.
 
 ## Local Private Session Reuse
 
@@ -206,8 +244,10 @@ The agent should base64-encode the bytes inside `page.evaluate`, decode them in 
 
 | Symptom | What to do |
 |---|---|
-| `scansci-pdf not installed`, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run `python scripts/bootstrap_njtech_paper.py` first. If the bootstrap script is unavailable, run `python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf`, then `scansci-pdf check`. |
-| `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'` | Run `python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci]" pypdf`; install into the same Python environment that runs `scansci-pdf`, then run `scansci-pdf check`. |
+| `scansci-pdf not installed`, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run `python scripts/bootstrap_njtech_paper.py --china-mirror` first. It installs PyPI dependencies, then the bundled vendored wheel. |
+| `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'` | Run `python scripts/bootstrap_njtech_paper.py --china-mirror`; install into the same Python environment that runs `scansci-pdf`, then run `scansci-pdf check`. |
+| Install runs for more than 10 minutes | Open `bootstrap.log`, identify the current stage, and retry with `--china-mirror`, `--proxy`, or a higher `--timeout`. |
+| First browser open is slow after setup | first Camofox launch downloads Chromium, about 200 MB, and caches it locally. This is not the pip install stage. |
 | Install succeeds but `scansci-pdf` is not recognized | Activate the same virtual environment, use the matching Python, or reopen the terminal. |
 | The user is asked to log in every time | Confirm the same system user, Python environment, and `cache_dir` are being used; check whether cache was cleared or the session expired. |
 | NJTech WebVPN shows `ERR_CONNECTION_CLOSED` | Keep the proxy if Codex needs it, but launch Camofox/Chrome with `camofox_no_proxy=true` or `--no-proxy-server`. |
@@ -237,15 +277,15 @@ No. The agent should open or guide the official browser flow only. Type your acc
 
 ### Why does this still need a local install?
 
-`scansci-pdf` controls the browser, legal-only config, local cache, and PDF verification on the user's computer. The skill is guidance and automation glue; it should not bundle a stale copy of `scansci-pdf` or run downloads through someone else's machine.
+`scansci-pdf` controls the browser, legal-only config, local cache, and PDF verification on the user's computer. The skill bundles a small fixed wheel to avoid slow GitHub source installs, but dependencies and the browser still run locally on the user's machine.
 
 ### What does bootstrap do?
 
-It installs or repairs the fixed GitHub `scansci-pdf[cloakbrowser,vpnsci]` environment, sets NJTech `legal_only` config, and runs dependency checks. It does not ask for or save your NJTech password, and it does not enable Sci-Hub, LibGen, or Tor.
+It installs or repairs PyPI dependencies, installs the bundled fixed `scansci-pdf` wheel, sets NJTech `legal_only` config, and runs dependency checks. It does not ask for or save your NJTech password, and it does not enable Sci-Hub, LibGen, or Tor.
 
 ### Why not bundle scansci-pdf inside this skill?
 
-Bundling would become stale quickly and make dependency/security fixes harder. The bootstrap script keeps the install local and upgradable while hiding most of the setup friction.
+The repository bundles only a tiny patched wheel to avoid slow first installs. It does not bundle someone else's browser profile, login state, downloaded papers, or the CloakBrowser Chromium binary. The bootstrap script still installs dependencies locally so fixes remain replaceable.
 
 ### Why can one computer usually avoid repeated logins?
 

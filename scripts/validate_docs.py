@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import re
 import sys
 from pathlib import Path
@@ -30,6 +31,14 @@ REQUIRED_PHRASES = {
         "install_njtech_paper.ps1",
         "installing scansci-pdf if missing",
         "## Zero-Friction Setup",
+        "## Slow Install",
+        "first Camofox launch",
+        "downloads Chromium",
+        "--china-mirror",
+        "--proxy",
+        "bootstrap.log",
+        "vendor/scansci_pdf-*.whl",
+        "--no-deps",
         "Elsevier institution finder stuck",
         "Cookie banner blocks institution search",
         "github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip",
@@ -56,6 +65,14 @@ REQUIRED_PHRASES = {
         "bootstrap_njtech_paper.py",
         "install_njtech_paper.ps1",
         "installing scansci-pdf if missing",
+        "## Slow Install",
+        "first Camofox launch",
+        "downloads Chromium",
+        "--china-mirror",
+        "--proxy",
+        "bootstrap.log",
+        "vendor/scansci_pdf-*.whl",
+        "--no-deps",
         "Elsevier institution finder stuck",
         "Cookie banner blocks institution search",
         "github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip",
@@ -77,13 +94,35 @@ REQUIRED_PHRASES = {
         "FIXED_SCANSCI_COMMIT",
         "8963533f5eb84b6cdd99f89ec94916ed0ca9acbc",
         "github.com/fffaang/njtech-paper/archive/",
-        "scansci-pdf[cloakbrowser,vpnsci] @ ",
+        "find_vendor_wheel",
+        "--no-deps",
+        "--china-mirror",
+        "--proxy",
+        "bootstrap.log",
+        "CommandTimedOut",
+        "DEFAULT_TIMEOUT",
+        "first Camofox launch",
+        "downloads Chromium",
+    ],
+    "scripts/install_njtech_paper.ps1": [
+        "ChinaMirror",
+        "Proxy",
+        "TimeoutSeconds",
+        "Log",
+        "WarmupBrowser",
+    ],
+    "vendor/README.md": [
+        "Vendored scansci-pdf Wheel",
+        "8963533f5eb84b6cdd99f89ec94916ed0ca9acbc",
+        "scansci_pdf-1.5.0-py3-none-any.whl",
+        "SHA256",
     ],
 }
 
 REQUIRED_FILES = [
     "scripts/bootstrap_njtech_paper.py",
     "scripts/install_njtech_paper.ps1",
+    "vendor/README.md",
 ]
 
 GITIGNORE_REQUIRED = [
@@ -125,6 +164,24 @@ def check_required_files() -> None:
         raise AssertionError(f"Missing required files: {missing}")
 
 
+def check_vendor_wheel() -> None:
+    wheels = sorted((ROOT / "vendor").glob("scansci_pdf-*.whl"))
+    if len(wheels) != 1:
+        raise AssertionError(f"Expected exactly one vendor scansci-pdf wheel, found {len(wheels)}")
+
+    wheel = wheels[0]
+    checksum_path = wheel.with_suffix(wheel.suffix + ".sha256")
+    if not checksum_path.exists():
+        raise AssertionError(f"Missing checksum for vendor wheel: {checksum_path.relative_to(ROOT)}")
+
+    expected = checksum_path.read_text(encoding="utf-8").split()[0].lower()
+    actual = hashlib.sha256(wheel.read_bytes()).hexdigest()
+    if actual != expected:
+        raise AssertionError(
+            f"Vendor wheel checksum mismatch for {wheel.name}: expected {expected}, got {actual}"
+        )
+
+
 def check_required_phrases() -> None:
     for relative, phrases in REQUIRED_PHRASES.items():
         text = read_required(ROOT / relative)
@@ -156,7 +213,7 @@ def check_skill_frontmatter() -> None:
 
 
 def check_forbidden_patterns() -> None:
-    targets = [ROOT / "README.md", ROOT / "SKILL.md", ROOT / "SECURITY.md"]
+    targets = [ROOT / "README.md", ROOT / "SKILL.md", ROOT / "SECURITY.md", ROOT / "vendor" / "README.md"]
     for path in targets:
         text = read_required(path)
         for label, pattern in FORBIDDEN_PATTERNS.items():
@@ -176,6 +233,7 @@ def check_gitignore_protections() -> None:
 def main() -> int:
     checks = [
         check_required_files,
+        check_vendor_wheel,
         check_required_phrases,
         check_skill_frontmatter,
         check_gitignore_protections,

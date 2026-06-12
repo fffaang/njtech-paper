@@ -18,6 +18,8 @@ Do not commit or publish:
 - Downloaded paper PDFs or publisher-provided files that are not meant to be redistributed.
 - Local config backups that contain private paths, accounts, cookies, tokens, or proxy credentials.
 
+Vendored release artifacts are allowed only when they contain code, such as a patched `scansci-pdf` wheel. Do not place browser profiles, cache directories, cookies, tokens, storage state, downloaded PDFs, signed links, logs with private headers, or account material inside `vendor/`, GitHub releases, or the skill directory.
+
 ## Account Sharing
 
 Do not configure one person's NJTech account for everyone. Hidden credentials in scripts, encrypted files, browser profiles, cookie jars, servers, or proxy services still count as shared-account access. Each user must authenticate manually with their own authorized account on the official NJTech/CARSI/WebVPN page. A private cache for one user on one computer is acceptable; copying that cache to others is not.
