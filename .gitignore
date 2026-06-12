@@ -1,0 +1,37 @@
+# Downloaded papers and generated outputs
+*.pdf
+*.PDF
+downloads/
+paper-downloads/
+scansci_test_downloads/
+
+# Browser profiles and authentication state
+browser-profile/
+browser-profiles/
+profiles/
+camofox-profile*/
+chrome-profile*/
+edge-profile*/
+playwright-profile*/
+storage_state*.json
+storage-state*.json
+auth-state*.json
+session*.json
+*.session
+cookies*.json
+cookies*.txt
+*cookie-jar*
+
+# Network captures and logs that may contain private URLs or headers
+*.har
+*.log
+logs/
+
+# Local configuration and backups
+.env
+.env.*
+*.local
+*.bak
+*.backup
+config.local.*
+local_config.*

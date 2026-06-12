@@ -1,100 +1,89 @@
 # njtech-paper
 
-`njtech-paper` is a Codex skill for helping Nanjing Tech University users legally download and troubleshoot institutional-access academic PDFs. It focuses on `scansci-pdf`, NJTech WebVPN, CARSI/OpenAthens, ScienceDirect, Camofox, proxy conflicts, and Cloudflare/CPE failure modes.
+`njtech-paper` is a Codex skill for helping Nanjing Tech University users legally download and troubleshoot institutional-access academic PDFs. It focuses on `scansci-pdf`, NJTech WebVPN, CARSI/OpenAthens, ScienceDirect, Camofox, proxy conflicts, missing installs, and Cloudflare/CPE failure modes.
 
-This repository contains process guidance for an AI coding agent. It does not contain credentials, cookies, WebVPN tokens, Cloudflare clearance values, signed PDF links, or any paper PDFs.
+This repository contains process guidance for an AI coding agent. It does not contain credentials, cookies, WebVPN tokens, Cloudflare clearance values, signed PDF links, browser profiles, or paper PDFs.
 
-## When To Use
+## Quick Start
 
-Use this skill when:
-
-- A user has a valid NJTech account and wants to download a paper through institutional access.
-- ScienceDirect/CARSI/OpenAthens cannot find 南京工业大学 unless searching `nanjing tech`.
-- NJTech WebVPN opens, but ScienceDirect returns CPE00001.
-- A browser can display a ScienceDirect PDF, but normal HTTP requests return 403, CPE, or challenge HTML.
-- Codex needs a proxy to work, while NJTech login or Camofox must bypass that proxy.
-
-Do not use this skill to access papers through Sci-Hub, LibGen, Tor, leaked links, shared cookies, or other non-institutional routes.
-
-## Installation
-
-Clone or copy this repository into the Codex skills directory:
+Install the skill:
 
 ```powershell
 git clone https://github.com/fffaang/njtech-paper.git "$env:USERPROFILE\.codex\skills\njtech-paper"
 ```
 
-On Unix-like systems, use:
+On Unix-like systems:
 
 ```bash
 git clone https://github.com/fffaang/njtech-paper.git ~/.codex/skills/njtech-paper
 ```
 
-Then invoke it in Codex with:
-
-```text
-Use $njtech-paper to download this DOI through NJTech institutional access and verify the PDF.
-```
-
-## Prerequisites
-
-- Python 3.11 or newer.
-- A valid 南京工业大学 institutional account.
-- A visible browser session for NJTech CAS, WebVPN, CARSI, and possible human verification.
-- `scansci-pdf` with the Camofox and WebVPN dependencies installed.
-
-If `scansci-pdf` is not installed, or an agent reports `scansci-pdf not installed`, install it before asking the skill to download a DOI:
+Install `scansci-pdf` with the legal-access browser dependencies:
 
 ```powershell
 python -m pip install --upgrade pip
 python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf
 ```
 
-Then verify the command is available:
+Verify it is available:
 
 ```powershell
 scansci-pdf check
 scansci-pdf --help
 ```
 
-If `python -m pip install ...` succeeds but `scansci-pdf` is still not recognized, activate the same virtual environment used for installation, reopen the terminal, or run the command through that Python environment.
-
-## Usage
-
-1. Install the skill into `~/.codex/skills/njtech-paper` on Unix-like systems, or `%USERPROFILE%\.codex\skills\njtech-paper` on Windows.
-2. Install and configure `scansci-pdf` for legal-only NJTech access. Use `download_strategy=legal_only`, NJTech WebVPN/CARSI settings, and `camofox_no_proxy=true`.
-3. Ask Codex to use the skill with a DOI:
+Then invoke the skill in Codex:
 
 ```text
 Use $njtech-paper to download https://doi.org/... through NJTech institutional access and verify the PDF.
 ```
 
-4. On first use, or after the school session expires, Codex will open a visible Camofox browser. The user must log in manually on the official 南京工业大学 CAS, WebVPN, or CARSI page with their own NJTech account.
-5. If Cloudflare/Turnstile or another human verification page appears, the user must complete it manually in that browser window.
-6. After the browser reaches the publisher PDF viewer, the agent should save the PDF and verify `%PDF-`, page count, and title/DOI text before reporting success.
+The user logs in manually on the official 南京工业大学 CAS/WebVPN/CARSI page when the browser opens. The agent should not ask for or store credentials.
 
-## First-time Setup
+## When To Use
 
-For a first-time user, ask the agent to do setup before downloading:
+Use this skill when:
+
+- A user has their own valid NJTech account and wants to access a paper through institutional access.
+- `scansci-pdf` is missing, not on `PATH`, or not configured for NJTech.
+- ScienceDirect/CARSI/OpenAthens cannot find 南京工业大学 unless searching `nanjing tech`.
+- NJTech WebVPN opens, but ScienceDirect returns CPE00001.
+- A browser can display a ScienceDirect PDF, but normal HTTP requests return 403, CPE, or challenge HTML.
+- Codex needs a proxy to work, while NJTech login or Camofox must bypass that proxy.
+
+Do not use this skill for Sci-Hub, LibGen, Tor, leaked links, shared accounts, shared cookies, or non-institutional access routes.
+
+## Example Prompts
+
+First-time setup plus download:
 
 ```text
 Use $njtech-paper to install/check scansci-pdf, configure NJTech legal-only access, then download https://doi.org/10.1016/j.conbuildmat.2026.145699.
 ```
 
-The agent should:
+Normal DOI download:
 
-1. Check whether `scansci-pdf` exists.
-2. If missing, install `scansci-pdf[cloakbrowser,vpnsci]` and `pypdf`.
-3. Set or confirm NJTech legal-only access settings.
-4. Open the official login flow only when needed; the user enters credentials manually.
-5. Download and verify the PDF.
+```text
+Use $njtech-paper to download https://doi.org/10.1016/j.engstruct.2021.112190 through NJTech institutional access and verify the PDF.
+```
 
-## Credential Safety
+Proxy conflict:
 
-- Users need their own valid NJTech institutional account and permission to access the requested publisher resource.
-- Do not send account names, passwords, cookies, WebVPN tokens, verification codes, Cloudflare clearance values, or browser session files to the agent.
-- Do not commit browser profiles, login state, downloaded paper PDFs, signed ScienceDirect asset URLs, or any other private access artifacts to GitHub.
-- The skill should guide the browser workflow only; credentials stay between the user and the official NJTech/CARSI/WebVPN login page.
+```text
+Use $njtech-paper. Codex needs iKuuu/proxy, but NJTech login fails with proxy. Keep Codex working and launch Camofox with no proxy.
+```
+
+CARSI institution search:
+
+```text
+Use $njtech-paper. CARSI cannot find 南京工业大学; try the Elsevier/OpenAthens search term nanjing tech.
+```
+
+Already at a ScienceDirect PDF viewer:
+
+```text
+Use $njtech-paper. The browser is already on the ScienceDirect PDF viewer; save the PDF with page-context fetch and verify it.
+```
 
 ## Recommended scansci-pdf Configuration
 
@@ -119,7 +108,7 @@ For Elsevier/CARSI institution search, use `nanjing tech` and select 南京工�
 
 ## Key Download Pattern
 
-The most important lesson from testing is that ScienceDirect may reject ordinary HTTP clients even after browser login. A `requests` call with cookies can still receive 403, CPE, or Cloudflare challenge HTML.
+ScienceDirect may reject ordinary HTTP clients even after browser login. A `requests` call with cookies can still receive 403, CPE, or Cloudflare challenge HTML.
 
 When the Camofox browser reaches a `pdf.sciencedirectassets.com/.../main.pdf` PDF viewer, fetch the PDF from inside that same page context:
 
@@ -135,7 +124,45 @@ async () => {
 }
 ```
 
-The agent should base64-encode the bytes inside `page.evaluate`, decode them in Python, write the file only if it starts with `%PDF-`, then verify the resulting PDF.
+The agent should base64-encode the bytes inside `page.evaluate`, decode them in Python, write the file only if it starts with `%PDF-`, then verify the PDF.
+
+## Troubleshooting
+
+| Symptom | What to do |
+|---|---|
+| `scansci-pdf not installed`, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run `python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf`, then `scansci-pdf check`. |
+| Install succeeds but `scansci-pdf` is not recognized | Activate the same virtual environment, use the matching Python, or reopen the terminal. |
+| NJTech WebVPN shows `ERR_CONNECTION_CLOSED` | Keep the proxy if Codex needs it, but launch Camofox/Chrome with `camofox_no_proxy=true` or `--no-proxy-server`. |
+| CARSI cannot find 南京工业大学 | Search `nanjing tech`. |
+| ScienceDirect through WebVPN returns CPE00001 | Use CARSI/OpenAthens instead of repeatedly retrying WebVPN. |
+| ScienceDirect asset returns 403/CPE/challenge HTML | Use page-context fetch from the loaded Camofox PDF viewer. |
+| Cloudflare/Turnstile appears | The user completes verification manually in the visible browser; the agent retries only after that. |
+
+## Credential Safety
+
+- Each user needs their own valid NJTech institutional account and permission to access the requested publisher resource.
+- Do not configure one person's NJTech account for everyone.
+- Do not send account names, passwords, cookies, WebVPN tokens, verification codes, Cloudflare clearance values, browser profiles, or session files to the agent.
+- Do not commit browser profiles, login state, downloaded paper PDFs, signed ScienceDirect asset URLs, or private access artifacts to GitHub.
+- Credentials stay between the user and the official NJTech/CARSI/WebVPN login page.
+
+## FAQ
+
+### Can I configure one NJTech account for everyone?
+
+No. Each user must log in with their own authorized NJTech account on the official NJTech/CARSI/WebVPN page. Hiding the password in a script, config, server, encrypted file, browser profile, cookie jar, or token store is still shared-account access and should be refused.
+
+### Does the agent need my password?
+
+No. The agent should open or guide the official browser flow only. Type your account, password, MFA, or verification code directly into the official page, not into chat or configuration files.
+
+### Can I upload downloaded PDFs to this repository?
+
+No. Do not upload paper PDFs, signed URLs, cookies, storage state, browser profiles, logs containing private URLs, or any other access artifacts.
+
+### What if my session expires?
+
+Run the skill again. The agent should reopen the official login flow and wait while you manually authenticate.
 
 ## Verification Checklist
 
@@ -147,16 +174,21 @@ Before reporting success, verify:
 - `pypdf` can read the page count.
 - Extracted text contains the expected title fragment, journal name, DOI fragment, or another reliable bibliographic marker.
 
-Two tested ScienceDirect examples:
+Tested ScienceDirect examples:
 
 - `10.1016/j.engfailanal.2025.110281`: downloaded as an 18-page `%PDF-1.7` file via CARSI-Camofox.
 - `10.1016/j.engstruct.2021.112190`: downloaded as an 11-page `%PDF-1.7` file via CARSI-Camofox.
+- `10.1016/j.conbuildmat.2026.145699`, PII `S0950061826006008`: first-time setup test case for legal NJTech/CARSI/ScienceDirect access only.
 
-Additional first-time setup test case from a user report:
+## Maintainer Checks
 
-- DOI: `10.1016/j.conbuildmat.2026.145699`
-- ScienceDirect PII: `S0950061826006008`
-- Expected path: legal NJTech/CARSI/ScienceDirect access only; do not include PDFs or signed asset links in the repository.
+Before publishing changes, run:
+
+```powershell
+python scripts/validate_docs.py
+```
+
+The validator checks required documentation phrases, skill frontmatter, and common accidental secret patterns.
 
 ## Repository Contents
 
@@ -164,8 +196,11 @@ Additional first-time setup test case from a user report:
 .
 ├── README.md
 ├── SKILL.md
-└── agents/
-    └── openai.yaml
+├── SECURITY.md
+├── agents/
+│   └── openai.yaml
+└── scripts/
+    └── validate_docs.py
 ```
 
 `SKILL.md` is the actual Codex skill. `agents/openai.yaml` provides UI metadata for Codex.
