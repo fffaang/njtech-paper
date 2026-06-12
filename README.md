@@ -205,7 +205,7 @@ The agent should base64-encode the bytes inside `page.evaluate`, decode them in 
 
 | Symptom | What to do |
 |---|---|
-| `scansci-pdf not installed`, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run `python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf`, then `scansci-pdf check`. |
+| `scansci-pdf not installed`, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run `python scripts/bootstrap_njtech_paper.py` first. If the bootstrap script is unavailable, run `python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf`, then `scansci-pdf check`. |
 | `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'` | Run `python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci]" pypdf`; install into the same Python environment that runs `scansci-pdf`, then run `scansci-pdf check`. |
 | Install succeeds but `scansci-pdf` is not recognized | Activate the same virtual environment, use the matching Python, or reopen the terminal. |
 | The user is asked to log in every time | Confirm the same system user, Python environment, and `cache_dir` are being used; check whether cache was cleared or the session expired. |
@@ -305,6 +305,8 @@ The validator checks required documentation phrases, skill frontmatter, and comm
 ├── agents/
 │   └── openai.yaml
 └── scripts/
+    ├── bootstrap_njtech_paper.py
+    ├── install_njtech_paper.ps1
     └── validate_docs.py
 ```
 

@@ -162,7 +162,7 @@ assert "expected title fragment".lower() in norm or "doi fragment" in norm
 
 | Symptom | Action |
 |---|---|
-| `scansci-pdf` not installed, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Install with `python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf`, then run `scansci-pdf check`. |
+| `scansci-pdf` not installed, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run `python scripts/bootstrap_njtech_paper.py` first. If the bootstrap script is unavailable, install with `python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf`, then run `scansci-pdf check`. |
 | `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'` | Reinstall with `python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci]" pypdf`; install into the same Python environment that runs `scansci-pdf`, then run `scansci-pdf check`. |
 | `pip install` succeeds but `scansci-pdf` is unavailable | Activate the same virtual environment, use the matching Python, or reopen the terminal. |
 | User is asked to log in every time | Confirm the same system user, Python environment, and `cache_dir` are being used; check whether cache was cleared or the session may expire; try local private session reuse before login. |
