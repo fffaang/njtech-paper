@@ -36,11 +36,11 @@ On Windows:
 powershell -ExecutionPolicy Bypass -File scripts/install_njtech_paper.ps1
 ```
 
-The older manual install command still works when you need to repair a Python environment directly:
+The manual repair command uses the same fixed GitHub source as the bootstrap script:
 
 ```powershell
 python -m pip install --upgrade pip
-python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf
+python -m pip install "scansci-pdf[cloakbrowser,vpnsci] @ https://github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip" pypdf
 ```
 
 Verify it is available:
@@ -65,9 +65,10 @@ Most users should not need to understand `pip`, extras, or config files. The ski
 The bootstrap script:
 
 - Checks Python 3.11+.
-- Installs or repairs `scansci-pdf[cloakbrowser,vpnsci]` and `pypdf`.
+- Installs or repairs the fixed GitHub version of `scansci-pdf[cloakbrowser,vpnsci]` and `pypdf`.
 - Runs `scansci-pdf check`.
 - Merges NJTech `legal_only` config into `~/.scansci-pdf/config.json`.
+- Includes the Elsevier institution finder stuck fix for Cookie banner blocks institution search and Nanjing Tech result matching.
 - Does not save your password, does not ask for NJTech credentials, and does not enable Sci-Hub, LibGen, or Tor.
 
 Preview the actions without changing anything:
@@ -211,6 +212,7 @@ The agent should base64-encode the bytes inside `page.evaluate`, decode them in 
 | The user is asked to log in every time | Confirm the same system user, Python environment, and `cache_dir` are being used; check whether cache was cleared or the session expired. |
 | NJTech WebVPN shows `ERR_CONNECTION_CLOSED` | Keep the proxy if Codex needs it, but launch Camofox/Chrome with `camofox_no_proxy=true` or `--no-proxy-server`. |
 | CARSI cannot find 南京工业大学 | Search `nanjing tech`. |
+| Elsevier institution finder stuck, or Cookie banner blocks institution search | Run `python scripts/bootstrap_njtech_paper.py` to upgrade to the fixed GitHub `scansci-pdf`; retry with Camofox no-proxy. If it still stops, manually click `Nanjing Tech University` / `南京工业大学` on the official page. |
 | ScienceDirect through WebVPN returns CPE00001 | Use CARSI/OpenAthens instead of repeatedly retrying WebVPN. |
 | ScienceDirect asset returns 403/CPE/challenge HTML | Use page-context fetch from the loaded Camofox PDF viewer. |
 | Cloudflare/Turnstile appears | The user completes verification manually in the visible browser; the agent retries only after that. |
@@ -239,7 +241,7 @@ No. The agent should open or guide the official browser flow only. Type your acc
 
 ### What does bootstrap do?
 
-It installs or repairs the local `scansci-pdf[cloakbrowser,vpnsci]` environment, sets NJTech `legal_only` config, and runs dependency checks. It does not ask for or save your NJTech password, and it does not enable Sci-Hub, LibGen, or Tor.
+It installs or repairs the fixed GitHub `scansci-pdf[cloakbrowser,vpnsci]` environment, sets NJTech `legal_only` config, and runs dependency checks. It does not ask for or save your NJTech password, and it does not enable Sci-Hub, LibGen, or Tor.
 
 ### Why not bundle scansci-pdf inside this skill?
 

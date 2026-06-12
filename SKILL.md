@@ -40,7 +40,7 @@ If missing, install only the legal-access dependencies:
 
 ```powershell
 python -m pip install --upgrade pip
-python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf
+python -m pip install "scansci-pdf[cloakbrowser,vpnsci] @ https://github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip" pypdf
 ```
 
 If install succeeds but the command is unavailable, activate the same virtual environment, use the matching Python, or reopen the terminal so the scripts directory is on `PATH`.
@@ -48,7 +48,7 @@ If install succeeds but the command is unavailable, activate the same virtual en
 If `scansci-pdf` starts but fails with `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'`, install into the same Python environment that runs `scansci-pdf`:
 
 ```powershell
-python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci]" pypdf
+python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci] @ https://github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip" pypdf
 scansci-pdf check
 ```
 
@@ -66,12 +66,12 @@ On Windows, the wrapper is also available:
 powershell -ExecutionPolicy Bypass -File scripts/install_njtech_paper.ps1
 ```
 
-This supports installing scansci-pdf if missing, repairing partial installs, running `scansci-pdf check`, and merging NJTech `legal_only` config. It does not save your password, does not ask for NJTech credentials, and must not enable Sci-Hub, LibGen, or Tor.
+This supports installing scansci-pdf if missing from the fixed GitHub source, repairing partial installs, running `scansci-pdf check`, and merging NJTech `legal_only` config. The fixed source includes the Elsevier institution finder stuck fix for Cookie banner blocks institution search and Nanjing Tech result matching. It does not save your password, does not ask for NJTech credentials, and must not enable Sci-Hub, LibGen, or Tor.
 
 If the bundled bootstrap script is not available, fall back to:
 
 ```powershell
-python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci]" pypdf
+python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci] @ https://github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip" pypdf
 scansci-pdf check
 ```
 
@@ -169,6 +169,7 @@ assert "expected title fragment".lower() in norm or "doi fragment" in norm
 | Public computer or account switch | Clear local cache/profile/cookies for that user before reuse. Never share cached login state. |
 | Chrome shows `ERR_CONNECTION_CLOSED` for NJTech WebVPN | Check proxy routing; launch the NJTech browser with no proxy. |
 | CARSI institution search cannot find 南京工业大学 | Search `nanjing tech`; Elsevier may rank unrelated names when searching Chinese text. |
+| Elsevier institution finder stuck, or Cookie banner blocks institution search | Run Zero-Friction Setup to upgrade to the fixed GitHub `scansci-pdf`; retry with Camofox no-proxy. If still stuck, let the user manually click `Nanjing Tech University` / `南京工业大学` on the official page. |
 | WebVPN opens ScienceDirect but PDF shows CPE00001 | Use CARSI instead of repeatedly retrying WebVPN. |
 | `requests` returns 403/CPE/challenge HTML for a ScienceDirect asset | Use Camofox page-context fetch from the loaded PDF viewer. |
 | Turnstile/Cloudflare appears | Wait for the user to complete it manually in the visible browser, then retry page-context fetch. |

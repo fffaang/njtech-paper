@@ -12,7 +12,11 @@ from typing import Any
 
 
 MIN_PYTHON = (3, 11)
-PACKAGE_SPEC = "scansci-pdf[cloakbrowser,vpnsci]"
+FIXED_SCANSCI_COMMIT = "8963533f5eb84b6cdd99f89ec94916ed0ca9acbc"
+PACKAGE_SPEC = (
+    "scansci-pdf[cloakbrowser,vpnsci] @ "
+    f"https://github.com/fffaang/njtech-paper/archive/{FIXED_SCANSCI_COMMIT}.zip"
+)
 NJTECH_CONFIG: dict[str, Any] = {
     "download_strategy": "legal_only",
     "scihub_enabled": False,

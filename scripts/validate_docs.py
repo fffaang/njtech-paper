@@ -30,6 +30,9 @@ REQUIRED_PHRASES = {
         "install_njtech_paper.ps1",
         "installing scansci-pdf if missing",
         "## Zero-Friction Setup",
+        "Elsevier institution finder stuck",
+        "Cookie banner blocks institution search",
+        "github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip",
     ],
     "SKILL.md": [
         "## Start Here",
@@ -53,6 +56,9 @@ REQUIRED_PHRASES = {
         "bootstrap_njtech_paper.py",
         "install_njtech_paper.ps1",
         "installing scansci-pdf if missing",
+        "Elsevier institution finder stuck",
+        "Cookie banner blocks institution search",
+        "github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip",
     ],
     "SECURITY.md": [
         "Do Not Commit",
@@ -66,6 +72,12 @@ REQUIRED_PHRASES = {
         "reuse local session if valid",
         "session may expire",
         "do not share or commit cache",
+    ],
+    "scripts/bootstrap_njtech_paper.py": [
+        "FIXED_SCANSCI_COMMIT",
+        "8963533f5eb84b6cdd99f89ec94916ed0ca9acbc",
+        "github.com/fffaang/njtech-paper/archive/",
+        "scansci-pdf[cloakbrowser,vpnsci] @ ",
     ],
 }
 
