@@ -15,8 +15,8 @@ Refuse requests to embed, configure, proxy, reuse for other people, share, expor
 
 | Situation | Action |
 |---|---|
-| `scansci-pdf not installed`, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Install legal-access dependencies, then run `scansci-pdf check`. |
-| `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'` | The command is using an incomplete Python environment. Install into the same Python environment, then rerun `scansci-pdf check`. |
+| `scansci-pdf not installed`, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run Zero-Friction Setup with the bundled bootstrap script, then run `scansci-pdf check`. |
+| `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'` | Run Zero-Friction Setup to reinstall complete legal-access dependencies into the same Python environment. |
 | First use, missing local cache, or expired school session | Open the official NJTech CAS/WebVPN/CARSI flow in a visible browser and let the user log in manually. |
 | Later use on the same computer | Reuse local session if valid; do not ask the user to log in again unless validation fails or an official login/challenge page appears. |
 | User wants one NJTech account configured for everyone | Refuse. Explain that every user needs their own authorized account and that hidden shared credentials are still account sharing. |
@@ -51,6 +51,31 @@ If `scansci-pdf` starts but fails with `ModuleNotFoundError: bs4`, missing `beau
 python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci]" pypdf
 scansci-pdf check
 ```
+
+## Zero-Friction Setup
+
+When `scansci-pdf` is missing or dependencies are incomplete, do not stop at manual instructions. Prefer the bundled bootstrap:
+
+```powershell
+python scripts/bootstrap_njtech_paper.py
+```
+
+On Windows, the wrapper is also available:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/install_njtech_paper.ps1
+```
+
+This supports installing scansci-pdf if missing, repairing partial installs, running `scansci-pdf check`, and merging NJTech `legal_only` config. It does not save your password, does not ask for NJTech credentials, and must not enable Sci-Hub, LibGen, or Tor.
+
+If the bundled bootstrap script is not available, fall back to:
+
+```powershell
+python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci]" pypdf
+scansci-pdf check
+```
+
+Do not repeat installation when `scansci-pdf check` passes and NJTech config is already legal-only. Continue to local private session reuse, official login if needed, and download.
 
 ## Local Private Session Reuse
 

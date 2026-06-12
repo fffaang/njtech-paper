@@ -26,9 +26,14 @@ REQUIRED_PHRASES = {
         "ModuleNotFoundError: bs4",
         "No module named 'cloakbrowser'",
         "install into the same Python environment",
+        "bootstrap_njtech_paper.py",
+        "install_njtech_paper.ps1",
+        "installing scansci-pdf if missing",
+        "## Zero-Friction Setup",
     ],
     "SKILL.md": [
         "## Start Here",
+        "## Zero-Friction Setup",
         "## Local Private Session Reuse",
         "scansci-pdf not installed",
         "shared accounts",
@@ -45,6 +50,9 @@ REQUIRED_PHRASES = {
         "ModuleNotFoundError: bs4",
         "No module named 'cloakbrowser'",
         "install into the same Python environment",
+        "bootstrap_njtech_paper.py",
+        "install_njtech_paper.ps1",
+        "installing scansci-pdf if missing",
     ],
     "SECURITY.md": [
         "Do Not Commit",
@@ -60,6 +68,11 @@ REQUIRED_PHRASES = {
         "do not share or commit cache",
     ],
 }
+
+REQUIRED_FILES = [
+    "scripts/bootstrap_njtech_paper.py",
+    "scripts/install_njtech_paper.ps1",
+]
 
 GITIGNORE_REQUIRED = [
     ".scansci-pdf/",
@@ -92,6 +105,12 @@ def read_required(path: Path) -> str:
     if not path.exists():
         raise AssertionError(f"Missing required file: {path.relative_to(ROOT)}")
     return path.read_text(encoding="utf-8")
+
+
+def check_required_files() -> None:
+    missing = [relative for relative in REQUIRED_FILES if not (ROOT / relative).exists()]
+    if missing:
+        raise AssertionError(f"Missing required files: {missing}")
 
 
 def check_required_phrases() -> None:
@@ -144,6 +163,7 @@ def check_gitignore_protections() -> None:
 
 def main() -> int:
     checks = [
+        check_required_files,
         check_required_phrases,
         check_skill_frontmatter,
         check_gitignore_protections,

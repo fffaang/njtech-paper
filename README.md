@@ -18,7 +18,25 @@ On Unix-like systems:
 git clone https://github.com/fffaang/njtech-paper.git ~/.codex/skills/njtech-paper
 ```
 
-Install `scansci-pdf` with the legal-access browser dependencies:
+Then use the agent auto setup path. This lets Codex handle installing scansci-pdf if missing, NJTech legal-only config, and dependency checks:
+
+```text
+Use $njtech-paper to set up this computer for NJTech legal paper access, installing scansci-pdf if missing, then download https://doi.org/...
+```
+
+Manual one-command setup is also available:
+
+```powershell
+python scripts/bootstrap_njtech_paper.py
+```
+
+On Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/install_njtech_paper.ps1
+```
+
+The older manual install command still works when you need to repair a Python environment directly:
 
 ```powershell
 python -m pip install --upgrade pip
@@ -39,6 +57,24 @@ Use $njtech-paper to download https://doi.org/... through NJTech institutional a
 ```
 
 The user logs in manually on the official 南京工业大学 CAS/WebVPN/CARSI page when the browser opens. The agent should not ask for or store credentials.
+
+## Zero-Friction Setup
+
+Most users should not need to understand `pip`, extras, or config files. The skill should run `scripts/bootstrap_njtech_paper.py` automatically when `scansci-pdf` is missing or incomplete.
+
+The bootstrap script:
+
+- Checks Python 3.11+.
+- Installs or repairs `scansci-pdf[cloakbrowser,vpnsci]` and `pypdf`.
+- Runs `scansci-pdf check`.
+- Merges NJTech `legal_only` config into `~/.scansci-pdf/config.json`.
+- Does not save your password, does not ask for NJTech credentials, and does not enable Sci-Hub, LibGen, or Tor.
+
+Preview the actions without changing anything:
+
+```powershell
+python scripts/bootstrap_njtech_paper.py --dry-run
+```
 
 ## Local Private Session Reuse
 
@@ -80,6 +116,12 @@ First-time setup plus download:
 
 ```text
 Use $njtech-paper to install/check scansci-pdf, configure NJTech legal-only access, then download https://doi.org/10.1016/j.conbuildmat.2026.145699.
+```
+
+Auto setup plus download:
+
+```text
+Use $njtech-paper to set up this computer for NJTech legal paper access, installing scansci-pdf if missing, then download https://doi.org/...
 ```
 
 Normal DOI download:
@@ -190,6 +232,18 @@ No. Each user must log in with their own authorized NJTech account on the offici
 ### Does the agent need my password?
 
 No. The agent should open or guide the official browser flow only. Type your account, password, MFA, or verification code directly into the official page, not into chat or configuration files.
+
+### Why does this still need a local install?
+
+`scansci-pdf` controls the browser, legal-only config, local cache, and PDF verification on the user's computer. The skill is guidance and automation glue; it should not bundle a stale copy of `scansci-pdf` or run downloads through someone else's machine.
+
+### What does bootstrap do?
+
+It installs or repairs the local `scansci-pdf[cloakbrowser,vpnsci]` environment, sets NJTech `legal_only` config, and runs dependency checks. It does not ask for or save your NJTech password, and it does not enable Sci-Hub, LibGen, or Tor.
+
+### Why not bundle scansci-pdf inside this skill?
+
+Bundling would become stale quickly and make dependency/security fixes harder. The bootstrap script keeps the install local and upgradable while hiding most of the setup friction.
 
 ### Why can one computer usually avoid repeated logins?
 
