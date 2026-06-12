@@ -35,3 +35,5 @@ Do not configure one person's NJTech account for everyone. Hidden credentials in
 ## Legal Access Boundary
 
 This project documents legal institutional-access workflows only. Do not add Sci-Hub, LibGen, Tor, leaked links, shared cookies, shared accounts, or代下 workflows.
+
+Cloudflare/Turnstile or ScienceDirect `manual_verification_required` states must be handled only by waiting for the authorized user in the visible official browser page. Do not bypass, script around, submit, store, or share verification answers, challenge HTML, clearance values, cookies, or signed asset URLs.

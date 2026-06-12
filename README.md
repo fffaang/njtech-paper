@@ -66,10 +66,10 @@ The bootstrap script:
 - Checks Python 3.11+.
 - Installs PyPI dependencies with staged progress, timeout, retry, and optional mirror/proxy support.
 - Installs or repairs `scansci-pdf` from the bundled `vendor/scansci_pdf-*.whl` with `--no-deps`.
-- Falls back to the fixed GitHub archive only if the local vendor wheel is missing: `https://github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip`.
+- Uses the bundled wheel as the default install source. If the wheel is missing, reinstall or reclone the full `njtech-paper` repository.
 - Runs `scansci-pdf check`.
 - Merges NJTech `legal_only` config into `~/.scansci-pdf/config.json`.
-- Includes the Elsevier institution finder stuck fix for Cookie banner blocks institution search and Nanjing Tech result matching.
+- Includes `playwright` dependency checks, legal_only no Sci-Hub/Tor hints, the Elsevier institution finder stuck fix, Cookie banner blocks institution search handling, and Nanjing Tech result matching.
 - Does not save your password, does not ask for NJTech credentials, and does not enable Sci-Hub, LibGen, or Tor.
 - Writes staged setup diagnostics to `~/.scansci-pdf/bootstrap.log` or `%USERPROFILE%\.scansci-pdf\bootstrap.log`.
 
@@ -111,7 +111,7 @@ powershell -ExecutionPolicy Bypass -File scripts/install_njtech_paper.ps1 -China
 How to read the stuck point:
 
 - Stuck at PyPI dependencies: retry with `--china-mirror`, and add `--proxy` only if Codex needs it.
-- Stuck at vendored wheel install: verify `vendor/scansci_pdf-*.whl` exists; otherwise bootstrap falls back to the GitHub archive, which can be slow.
+- Stuck at vendored wheel install: verify `vendor/scansci_pdf-*.whl` exists; if it is missing, reinstall or reclone the full `njtech-paper` repository.
 - Stuck after setup when the browser opens: first Camofox launch downloads Chromium and caches it locally; use `--warmup-browser` when you want to do that explicitly.
 - No output for more than 10 minutes: stop the run, inspect `bootstrap.log`, and retry with the options above instead of waiting blindly.
 
@@ -252,10 +252,10 @@ The agent should base64-encode the bytes inside `page.evaluate`, decode them in 
 | The user is asked to log in every time | Confirm the same system user, Python environment, and `cache_dir` are being used; check whether cache was cleared or the session expired. |
 | NJTech WebVPN shows `ERR_CONNECTION_CLOSED` | Keep the proxy if Codex needs it, but launch Camofox/Chrome with `camofox_no_proxy=true` or `--no-proxy-server`. |
 | CARSI cannot find 南京工业大学 | Search `nanjing tech`. |
-| Elsevier institution finder stuck, or Cookie banner blocks institution search | Run `python scripts/bootstrap_njtech_paper.py` to upgrade to the fixed GitHub `scansci-pdf`; retry with Camofox no-proxy. If it still stops, manually click `Nanjing Tech University` / `南京工业大学` on the official page. |
+| Elsevier institution finder stuck, or Cookie banner blocks institution search | Run `python scripts/bootstrap_njtech_paper.py` to install the bundled fixed `scansci-pdf` wheel; retry with Camofox no-proxy. If it still stops, manually click `Nanjing Tech University` / `南京工业大学` on the official page. |
 | ScienceDirect through WebVPN returns CPE00001 | Use CARSI/OpenAthens instead of repeatedly retrying WebVPN. |
-| ScienceDirect asset returns 403/CPE/challenge HTML | Use page-context fetch from the loaded Camofox PDF viewer. |
-| Cloudflare/Turnstile appears | The user completes verification manually in the visible browser; the agent retries only after that. |
+| ScienceDirect asset returns 403/CPE/challenge HTML | Treat it as `manual_verification_required`; keep the visible Camofox browser open, let the user pass the official challenge, then retry page-context fetch. |
+| Cloudflare/Turnstile or `Are you a robot?` appears | The user completes verification manually in the visible browser; the agent retries only after that. |
 
 ## Credential Safety
 
@@ -326,6 +326,7 @@ Tested ScienceDirect examples:
 - `10.1016/j.engfailanal.2025.110281`: downloaded as an 18-page `%PDF-1.7` file via CARSI-Camofox.
 - `10.1016/j.engstruct.2021.112190`: downloaded as an 11-page `%PDF-1.7` file via CARSI-Camofox.
 - `10.1016/j.conbuildmat.2026.145699`, PII `S0950061826006008`: first-time setup test case for legal NJTech/CARSI/ScienceDirect access only.
+- PII `S0263822321002385`: legal ScienceDirect/CARSI regression case for 403 HTML and `manual_verification_required` handling. Do not commit the PDF, challenge HTML, cookies, or signed asset links.
 
 ## Maintainer Checks
 
@@ -341,15 +342,15 @@ The validator checks required documentation phrases, skill frontmatter, and comm
 
 ```text
 .
-├── README.md
-├── SKILL.md
-├── SECURITY.md
-├── agents/
-│   └── openai.yaml
-└── scripts/
-    ├── bootstrap_njtech_paper.py
-    ├── install_njtech_paper.ps1
-    └── validate_docs.py
+|-- README.md
+|-- SKILL.md
+|-- SECURITY.md
+|-- agents/
+|   `-- openai.yaml
+`-- scripts/
+    |-- bootstrap_njtech_paper.py
+    |-- install_njtech_paper.ps1
+    `-- validate_docs.py
 ```
 
 `SKILL.md` is the actual Codex skill. `agents/openai.yaml` provides UI metadata for Codex.

@@ -18,9 +18,12 @@ MIN_PYTHON = (3, 11)
 DEFAULT_TIMEOUT = 600
 CHINA_PYPI_INDEX = "https://pypi.tuna.tsinghua.edu.cn/simple"
 CHINA_PYPI_HOST = "pypi.tuna.tsinghua.edu.cn"
-FIXED_SCANSCI_COMMIT = "8963533f5eb84b6cdd99f89ec94916ed0ca9acbc"
-FIXED_SCANSCI_URL = f"https://github.com/fffaang/njtech-paper/archive/{FIXED_SCANSCI_COMMIT}.zip"
-FALLBACK_PACKAGE_SPEC = f"scansci-pdf @ {FIXED_SCANSCI_URL}"
+FIXED_SCANSCI_COMMIT = "0dead208310441dd406541d7b98644710d530d0c"
+VENDOR_MISSING_MESSAGE = (
+    "Local vendor/scansci_pdf-*.whl is missing. Reinstall or reclone the full "
+    "njtech-paper repository; the shared bootstrap does not fall back to old PyPI "
+    "extras or a source archive."
+)
 PYPI_DEPENDENCIES = [
     "requests>=2.31",
     "requests[socks]>=2.31",
@@ -31,6 +34,7 @@ PYPI_DEPENDENCIES = [
     "pycryptodome>=3.20",
     "selenium>=4.15",
     "cloakbrowser>=0.3",
+    "playwright>=1.45",
     "pypdf",
 ]
 NJTECH_CONFIG: dict[str, Any] = {
@@ -306,17 +310,7 @@ def install_dependencies(
         )
         return
 
-    logger.log("[fallback] Local vendor wheel is missing; GitHub archive install may be slow.")
-    run_pip_install(
-        [FALLBACK_PACKAGE_SPEC],
-        dry_run=dry_run,
-        logger=logger,
-        stage="Install fixed scansci-pdf from GitHub archive fallback",
-        timeout=timeout,
-        china_mirror=False,
-        proxy=proxy,
-        no_deps=True,
-    )
+    raise BootstrapError("Install vendored scansci-pdf wheel", VENDOR_MISSING_MESSAGE)
 
 
 def module_available(name: str) -> bool:

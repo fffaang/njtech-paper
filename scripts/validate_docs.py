@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import hashlib
 import re
@@ -41,7 +41,10 @@ REQUIRED_PHRASES = {
         "--no-deps",
         "Elsevier institution finder stuck",
         "Cookie banner blocks institution search",
-        "github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip",
+        "playwright",
+        "manual_verification_required",
+        "legal_only no Sci-Hub/Tor hints",
+        "S0263822321002385",
     ],
     "SKILL.md": [
         "## Start Here",
@@ -75,7 +78,11 @@ REQUIRED_PHRASES = {
         "--no-deps",
         "Elsevier institution finder stuck",
         "Cookie banner blocks institution search",
-        "github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip",
+        "playwright",
+        "manual_verification_required",
+        "legal_only no Sci-Hub/Tor hints",
+        "S0263822321002385",
+        "Are you a robot?",
     ],
     "SECURITY.md": [
         "Do Not Commit",
@@ -89,11 +96,12 @@ REQUIRED_PHRASES = {
         "reuse local session if valid",
         "session may expire",
         "do not share or commit cache",
+        "manual_verification_required",
     ],
     "scripts/bootstrap_njtech_paper.py": [
         "FIXED_SCANSCI_COMMIT",
-        "8963533f5eb84b6cdd99f89ec94916ed0ca9acbc",
-        "github.com/fffaang/njtech-paper/archive/",
+        "0dead208310441dd406541d7b98644710d530d0c",
+        "VENDOR_MISSING_MESSAGE",
         "find_vendor_wheel",
         "--no-deps",
         "--china-mirror",
@@ -103,6 +111,7 @@ REQUIRED_PHRASES = {
         "DEFAULT_TIMEOUT",
         "first Camofox launch",
         "downloads Chromium",
+        "playwright>=1.45",
     ],
     "scripts/install_njtech_paper.ps1": [
         "ChinaMirror",
@@ -113,7 +122,7 @@ REQUIRED_PHRASES = {
     ],
     "vendor/README.md": [
         "Vendored scansci-pdf Wheel",
-        "8963533f5eb84b6cdd99f89ec94916ed0ca9acbc",
+        "0dead208310441dd406541d7b98644710d530d0c",
         "scansci_pdf-1.5.0-py3-none-any.whl",
         "SHA256",
     ],
@@ -147,6 +156,10 @@ FORBIDDEN_PATTERNS = {
     ),
     "signed ScienceDirect asset URL": re.compile(
         r"https?://pdf\.sciencedirectassets\.com/\S*[?&](?:token|hash|download|expires|X-Amz-|Signature=)",
+        re.I,
+    ),
+    "direct PyPI scansci-pdf fallback in docs": re.compile(
+        r"python\s+-m\s+pip\s+install[^\n]*scansci-pdf\[cloakbrowser,vpnsci\]",
         re.I,
     ),
 }

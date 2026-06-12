@@ -25,7 +25,7 @@ Refuse requests to embed, configure, proxy, reuse for other people, share, expor
 | Codex requires iKuuu/proxy but NJTech login fails with proxy | Keep the proxy for Codex, but launch Camofox/Chrome with no proxy: `camofox_no_proxy=true` or `--no-proxy-server`. |
 | CARSI/OpenAthens cannot find 南京工业大学 | Search `nanjing tech`, then select 南京工业大学 / Nanjing Tech University. |
 | WebVPN opens ScienceDirect but PDF returns CPE00001 | Stop looping on WebVPN and use CARSI. |
-| ScienceDirect asset returns 403, CPE, or challenge HTML | Do not keep adding cookies to `requests`; open the PDF viewer and use page-context fetch. |
+| ScienceDirect asset returns 403, CPE, or challenge HTML | Treat it as `manual_verification_required`; keep the Camofox browser open for official user verification, then retry page-context fetch. |
 | Browser is already on `pdf.sciencedirectassets.com/.../main.pdf` | Fetch from inside that same page context, save bytes, then verify the PDF. |
 
 ## First-Time Setup
@@ -66,7 +66,7 @@ On Windows, the wrapper is also available:
 powershell -ExecutionPolicy Bypass -File scripts/install_njtech_paper.ps1 -ChinaMirror
 ```
 
-This supports installing scansci-pdf if missing, repairing partial installs, running `scansci-pdf check`, and merging NJTech `legal_only` config. It installs PyPI dependencies first, then installs the bundled `vendor/scansci_pdf-*.whl` with `--no-deps`; only if the local wheel is missing should it fall back to the fixed GitHub archive, which may be slow. The fixed source includes the Elsevier institution finder stuck fix for Cookie banner blocks institution search and Nanjing Tech result matching. It does not save your password, does not ask for NJTech credentials, and must not enable Sci-Hub, LibGen, or Tor.
+This supports installing scansci-pdf if missing, repairing partial installs, running `scansci-pdf check`, and merging NJTech `legal_only` config. It installs PyPI dependencies first, then installs the bundled `vendor/scansci_pdf-*.whl` with `--no-deps`. If the local wheel is missing, reinstall or reclone the full `njtech-paper` repository. The fixed source includes dependency checks for `playwright`, legal_only no Sci-Hub/Tor hints, Elsevier institution finder stuck handling, Cookie banner blocks institution search handling, and Nanjing Tech result matching. It does not save your password, does not ask for NJTech credentials, and must not enable Sci-Hub, LibGen, or Tor.
 
 Use these options when setup is slow:
 
@@ -81,12 +81,7 @@ python scripts/bootstrap_njtech_paper.py --warmup-browser
 
 The first Camofox launch downloads Chromium, roughly 200 MB, and caches it locally. Treat that as browser warm-up, not a pip install failure.
 
-If the bundled bootstrap script is not available, fall back to:
-
-```powershell
-python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci] @ https://github.com/fffaang/njtech-paper/archive/8963533f5eb84b6cdd99f89ec94916ed0ca9acbc.zip" pypdf
-scansci-pdf check
-```
+If the bundled bootstrap script or vendored wheel is unavailable, ask the user to reinstall or reclone the `njtech-paper` repository. Do not recommend direct PyPI `scansci-pdf[cloakbrowser,vpnsci]` as the shared-version fallback, because old PyPI builds may not contain the NJTech/CARSI fixes.
 
 Do not repeat installation when `scansci-pdf check` passes and NJTech config is already legal-only. Continue to local private session reuse, official login if needed, and download.
 
@@ -96,7 +91,7 @@ When another computer reports that Codex has been installing for half an hour, d
 
 1. Read the tail of `bootstrap.log`.
 2. If the current stage is PyPI dependencies, retry with `--china-mirror`; add `--proxy` only for pip if Codex needs a proxy.
-3. If the current stage is vendored wheel install, confirm `vendor/scansci_pdf-*.whl` and its `.sha256` exist. Do not use GitHub archive fallback unless the wheel is missing.
+3. If the current stage is vendored wheel install, confirm `vendor/scansci_pdf-*.whl` and its `.sha256` exist. If they are missing, reinstall or reclone the full `njtech-paper` repository.
 4. If Python setup already completed and the browser is opening, explain that first Camofox launch downloads Chromium and can take time on a slow network.
 5. If no stage changes for more than 10 minutes, stop the current run and retry with a longer `--timeout`; do not leave the user without progress.
 
@@ -159,6 +154,8 @@ async () => {
 
 In Python/Playwright, base64-encode the bytes in `page.evaluate`, decode in Python, and write only if the content starts with `%PDF-`.
 
+If the page-context fetch returns 403 `text/html`, Cloudflare, Turnstile, `Are you a robot?`, or `请验证您是真人`, set the state to `manual_verification_required`, keep the visible browser open, wait for the user to complete the official verification, and retry once. Do not save the HTML body as a PDF and do not store signed asset URLs.
+
 ## Verification
 
 Before claiming success:
@@ -185,7 +182,7 @@ assert "expected title fragment".lower() in norm or "doi fragment" in norm
 
 | Symptom | Action |
 |---|---|
-| `scansci-pdf` not installed, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run `python scripts/bootstrap_njtech_paper.py --china-mirror` first. It installs PyPI dependencies and then the bundled vendored wheel. If the bootstrap script is unavailable, install with `python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf`, then run `scansci-pdf check`. |
+| `scansci-pdf` not installed, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run `python scripts/bootstrap_njtech_paper.py --china-mirror` first. It installs PyPI dependencies and then the bundled vendored wheel. If the bootstrap script or wheel is unavailable, reinstall the `njtech-paper` repository rather than using old PyPI extras. |
 | `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'` | Run `python scripts/bootstrap_njtech_paper.py --china-mirror`; install into the same Python environment that runs `scansci-pdf`, then run `scansci-pdf check`. |
 | Install takes more than 10 minutes | Inspect `bootstrap.log` for the current stage. Retry with `--china-mirror`, `--proxy http://127.0.0.1:<port>`, or a higher `--timeout`. |
 | Setup finishes but first browser launch is slow | first Camofox launch downloads Chromium, about 200 MB, and caches it locally; this is separate from pip install. |
@@ -194,10 +191,10 @@ assert "expected title fragment".lower() in norm or "doi fragment" in norm
 | Public computer or account switch | Clear local cache/profile/cookies for that user before reuse. Never share cached login state. |
 | Chrome shows `ERR_CONNECTION_CLOSED` for NJTech WebVPN | Check proxy routing; launch the NJTech browser with no proxy. |
 | CARSI institution search cannot find 南京工业大学 | Search `nanjing tech`; Elsevier may rank unrelated names when searching Chinese text. |
-| Elsevier institution finder stuck, or Cookie banner blocks institution search | Run Zero-Friction Setup to upgrade to the fixed GitHub `scansci-pdf`; retry with Camofox no-proxy. If still stuck, let the user manually click `Nanjing Tech University` / `南京工业大学` on the official page. |
+| Elsevier institution finder stuck, or Cookie banner blocks institution search | Run Zero-Friction Setup to install the bundled fixed `scansci-pdf` wheel; retry with Camofox no-proxy. If still stuck, let the user manually click `Nanjing Tech University` / `南京工业大学` on the official page. |
 | WebVPN opens ScienceDirect but PDF shows CPE00001 | Use CARSI instead of repeatedly retrying WebVPN. |
-| `requests` returns 403/CPE/challenge HTML for a ScienceDirect asset | Use Camofox page-context fetch from the loaded PDF viewer. |
-| Turnstile/Cloudflare appears | Wait for the user to complete it manually in the visible browser, then retry page-context fetch. |
+| `requests` or page-context fetch returns 403/CPE/challenge HTML for a ScienceDirect asset | Mark `manual_verification_required`, keep Camofox open, let the user complete the official challenge, then retry page-context fetch. |
+| Turnstile/Cloudflare or `Are you a robot?` appears | Wait for the user to complete it manually in the visible browser, then retry page-context fetch. |
 | PDF viewer opens but no file lands on disk | Use page-context fetch first; browser download button automation is only a fallback. |
 
 ## Regression Examples
@@ -205,3 +202,4 @@ assert "expected title fragment".lower() in norm or "doi fragment" in norm
 - `10.1016/j.engfailanal.2025.110281`: verified as an 18-page `%PDF-1.7` file via CARSI-Camofox.
 - `10.1016/j.engstruct.2021.112190`: verified as an 11-page `%PDF-1.7` file via CARSI-Camofox.
 - `10.1016/j.conbuildmat.2026.145699`, PII `S0950061826006008`: use only as a legal NJTech/CARSI/ScienceDirect access test case; do not store the PDF or signed links in the repository.
+- PII `S0263822321002385`: legal ScienceDirect/CARSI regression case for 403 HTML and `manual_verification_required` handling; do not store the PDF, challenge HTML, cookies, or signed links.
