@@ -40,6 +40,27 @@ Use $njtech-paper to download https://doi.org/... through NJTech institutional a
 
 The user logs in manually on the official 南京工业大学 CAS/WebVPN/CARSI page when the browser opens. The agent should not ask for or store credentials.
 
+## Local Private Session Reuse
+
+`njtech-paper` should aim for one-time local login on the same computer: first login, then reuse local session if valid. This does not save your password. It only reuses official session material already issued to this system user on this computer.
+
+The local cache is private to your machine:
+
+- Windows: `%USERPROFILE%\.scansci-pdf\cache`
+- Unix-like systems: `~/.scansci-pdf/cache`
+
+The cache may include browser profile data, CARSI cookies, publisher cookies, WebVPN cookies, and related session files. These files help avoid typing your NJTech account password every time, but they are still sensitive login state: do not share or commit cache, do not sync it to a public/cloud repository, and do not copy it to another person's computer.
+
+The session may expire when NJTech, CARSI, the publisher, MFA, or Cloudflare/Turnstile requires a fresh check. In that case, the agent should reopen the official browser login flow and wait while you log in manually.
+
+For NJTech WebVPN warm-up, this command can create local WebVPN cookies:
+
+```powershell
+scansci-pdf login --login-type webvpn
+```
+
+For ScienceDirect/CARSI, warm up by running a normal legal DOI download once. The first successful browser login/download saves local CARSI/publisher cookies and persistent Camofox profile data for later reuse. Do not use `scansci-pdf login --login-type carsi` as a recommended command because the current CLI does not implement that branch.
+
 ## When To Use
 
 Use this skill when:
@@ -83,6 +104,18 @@ Already at a ScienceDirect PDF viewer:
 
 ```text
 Use $njtech-paper. The browser is already on the ScienceDirect PDF viewer; save the PDF with page-context fetch and verify it.
+```
+
+Warm up local session reuse:
+
+```text
+Use $njtech-paper to warm up my local NJTech/CARSI session on this computer, then download https://doi.org/...
+```
+
+Reuse an existing local session:
+
+```text
+Use $njtech-paper to reuse my existing local NJTech session if valid; only open login if the session expired.
 ```
 
 ## Recommended scansci-pdf Configuration
@@ -143,7 +176,7 @@ The agent should base64-encode the bytes inside `page.evaluate`, decode them in 
 - Each user needs their own valid NJTech institutional account and permission to access the requested publisher resource.
 - Do not configure one person's NJTech account for everyone.
 - Do not send account names, passwords, cookies, WebVPN tokens, verification codes, Cloudflare clearance values, browser profiles, or session files to the agent.
-- Do not commit browser profiles, login state, downloaded paper PDFs, signed ScienceDirect asset URLs, or private access artifacts to GitHub.
+- It is okay for your own computer to keep a private local session cache for reuse. Do not share or commit cache, browser profiles, login state, downloaded paper PDFs, signed ScienceDirect asset URLs, or private access artifacts to GitHub.
 - Credentials stay between the user and the official NJTech/CARSI/WebVPN login page.
 
 ## FAQ
@@ -155,6 +188,22 @@ No. Each user must log in with their own authorized NJTech account on the offici
 ### Does the agent need my password?
 
 No. The agent should open or guide the official browser flow only. Type your account, password, MFA, or verification code directly into the official page, not into chat or configuration files.
+
+### Why can one computer usually avoid repeated logins?
+
+After the first official login, `scansci-pdf` can reuse local session if valid by reading private cache/profile/cookie files on the same computer. This does not save your password, and it only works until the official session may expire.
+
+### Can I guarantee I will never need to log in again?
+
+No. NJTech, CARSI, publishers, MFA, or Cloudflare/Turnstile can expire or reject a session at any time. When that happens, the agent should open the official page and wait while you log in manually again.
+
+### What should I do on a public computer or when switching accounts?
+
+Clear the local session cache before reuse. Remove the relevant files under `%USERPROFILE%\.scansci-pdf\cache` or `~/.scansci-pdf/cache`, especially publisher profiles, `carsi_cookies`, `publisher_cookies.*`, `vpnsci-cookies.*`, and `browser_state.json`.
+
+### Can I copy my cache to someone else so they do not need to log in?
+
+No. Local cache contains sensitive login state. Copying browser profiles, cookies, storage state, or WebVPN/CARSI session files to others is equivalent to sharing your account/session and should be refused.
 
 ### Can I upload downloaded PDFs to this repository?
 

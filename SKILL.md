@@ -7,17 +7,19 @@ description: Use when helping Nanjing Tech University users legally download or 
 
 ## Core Rule
 
-Use only legal institutional access. Each user must log in with their own authorized NJTech account on the official NJTech/CARSI/WebVPN page.
+Use only legal institutional access. Each user must log in with their own authorized NJTech account on the official NJTech/CARSI/WebVPN page. The skill may reuse that same user's local private session cache on the same computer while it remains valid.
 
-Refuse requests to embed, configure, proxy, reuse, share, save, or distribute a personal account, saved passwords, cookies, tokens, browser profiles, storage state, WebVPN token, signed asset URL, or Cloudflare clearance value. Do not ask the user to paste credentials or verification codes into chat. Do not use Sci-Hub, LibGen, Tor, leaked links, shared accounts, shared cookies, or代下 services.
+Refuse requests to embed, configure, proxy, reuse for other people, share, export, sync, or distribute a personal account, saved passwords, cookies, tokens, browser profiles, storage state, WebVPN token, signed asset URL, or Cloudflare clearance value. Local private session reuse does not save your password and does not permit sharing login state. Do not ask the user to paste credentials or verification codes into chat. Do not use Sci-Hub, LibGen, Tor, leaked links, shared accounts, shared cookies, or代下 services.
 
 ## Start Here
 
 | Situation | Action |
 |---|---|
 | `scansci-pdf not installed`, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Install legal-access dependencies, then run `scansci-pdf check`. |
-| First use or expired school session | Open the official NJTech CAS/WebVPN/CARSI flow in a visible browser and let the user log in manually. |
+| First use, missing local cache, or expired school session | Open the official NJTech CAS/WebVPN/CARSI flow in a visible browser and let the user log in manually. |
+| Later use on the same computer | Reuse local session if valid; do not ask the user to log in again unless validation fails or an official login/challenge page appears. |
 | User wants one NJTech account configured for everyone | Refuse. Explain that every user needs their own authorized account and that hidden shared credentials are still account sharing. |
+| User wants to copy cache/profile/cookies to another person or machine | Refuse. Explain that local cache is sensitive login state and must stay private to the same user on the same computer. |
 | Codex requires iKuuu/proxy but NJTech login fails with proxy | Keep the proxy for Codex, but launch Camofox/Chrome with no proxy: `camofox_no_proxy=true` or `--no-proxy-server`. |
 | CARSI/OpenAthens cannot find 南京工业大学 | Search `nanjing tech`, then select 南京工业大学 / Nanjing Tech University. |
 | WebVPN opens ScienceDirect but PDF returns CPE00001 | Stop looping on WebVPN and use CARSI. |
@@ -41,6 +43,16 @@ python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf
 ```
 
 If install succeeds but the command is unavailable, activate the same virtual environment, use the matching Python, or reopen the terminal so the scripts directory is on `PATH`.
+
+## Local Private Session Reuse
+
+Goal: first login, reuse local session when still valid. This does not save your password; it reuses official session cookies, CARSI cookies, publisher cookies, WebVPN cookies, and browser profiles stored only on this computer for this system user.
+
+Before opening a login page, try the existing local cache/profile/cookies; reuse local session if valid. Only ask the user to log in again when the cache is missing, validation fails, the user changed accounts, an official CAS/CARSI/Turnstile page appears, or the session may expire because NJTech/CARSI/the publisher enforced a timeout.
+
+For ScienceDirect/CARSI, the first successful legal DOI download is the warm-up path that creates local CARSI/publisher cookies and persistent Camofox profile data. Do not recommend `scansci-pdf login --login-type carsi`; the current CLI does not implement that branch. For NJTech WebVPN warm-up, `scansci-pdf login --login-type webvpn` is acceptable.
+
+Treat cached login state as sensitive. The agent may use it locally for the same user, but must not print it, upload it, copy it to another machine, include it in a skill, or help share it with others. In short: do not share or commit cache.
 
 ## Known Good Configuration
 
@@ -66,11 +78,12 @@ Do not enable Sci-Hub, LibGen, or Tor to fix a missing install or access failure
 ## Download Workflow
 
 1. Complete First-Time Setup and confirm legal-only NJTech config.
-2. For ScienceDirect, try CARSI first. Use NJTech WebVPN only as a fallback.
-3. Let the user complete NJTech CAS, CARSI, and any Cloudflare/Turnstile verification in the visible browser.
-4. If the publisher shows a PDF viewer, prefer page-context fetch over browser button automation.
-5. Save the PDF only when the response starts with `%PDF-`.
-6. Verify file size, PDF header, readable page count, and title/DOI text before reporting success.
+2. Try local private session reuse first; do not default to a fresh login prompt.
+3. For ScienceDirect, try CARSI first. Use NJTech WebVPN only as a fallback.
+4. Let the user complete NJTech CAS, CARSI, and any Cloudflare/Turnstile verification in the visible browser only when local session reuse fails or an official page requests it.
+5. If the publisher shows a PDF viewer, prefer page-context fetch over browser button automation.
+6. Save the PDF only when the response starts with `%PDF-`.
+7. Verify file size, PDF header, readable page count, and title/DOI text before reporting success.
 
 ## ScienceDirect Page-Context Fetch
 
@@ -118,6 +131,8 @@ assert "expected title fragment".lower() in norm or "doi fragment" in norm
 |---|---|
 | `scansci-pdf` not installed, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Install with `python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf`, then run `scansci-pdf check`. |
 | `pip install` succeeds but `scansci-pdf` is unavailable | Activate the same virtual environment, use the matching Python, or reopen the terminal. |
+| User is asked to log in every time | Confirm the same system user and cache directory are being used; try local private session reuse before login; expect re-login only when the session may expire or validation fails. |
+| Public computer or account switch | Clear local cache/profile/cookies for that user before reuse. Never share cached login state. |
 | Chrome shows `ERR_CONNECTION_CLOSED` for NJTech WebVPN | Check proxy routing; launch the NJTech browser with no proxy. |
 | CARSI institution search cannot find 南京工业大学 | Search `nanjing tech`; Elsevier may rank unrelated names when searching Chinese text. |
 | WebVPN opens ScienceDirect but PDF shows CPE00001 | Use CARSI instead of repeatedly retrying WebVPN. |

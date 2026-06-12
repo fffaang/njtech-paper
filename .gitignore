@@ -13,6 +13,14 @@ camofox-profile*/
 chrome-profile*/
 edge-profile*/
 playwright-profile*/
+publisher_profile_*/
+publisher_profile_*
+browser_state.json
+carsi_cookies/
+publisher_cookies.json
+publisher_cookies.txt
+vpnsci-cookies.json
+vpnsci-cookies.txt
 storage_state*.json
 storage-state*.json
 auth-state*.json

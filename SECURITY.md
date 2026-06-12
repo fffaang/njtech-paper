@@ -1,6 +1,12 @@
 # Security Policy
 
-`njtech-paper` is a process skill for legal NJTech institutional access. It must not become a credential-sharing, account-proxying, or paper-redistribution tool.
+`njtech-paper` is a process skill for legal NJTech institutional access. It must not become a credential-sharing, account-proxying, session-sharing, or paper-redistribution tool.
+
+## Local Private Session Reuse
+
+Local private session reuse is allowed for the same authorized user on the same computer. It can reuse local browser profiles, CARSI cookies, publisher cookies, WebVPN cookies, and storage state while the official session remains valid. It does not save your password.
+
+Local session reuse is still sensitive: reuse local session if valid, but do not share or commit cache, copy it to another person, upload it to GitHub, sync it to a public/cloud folder, place it inside the skill, or use it for代下 service. The session may expire whenever NJTech, CARSI, a publisher, MFA, or Cloudflare/Turnstile requires fresh authentication.
 
 ## Do Not Commit
 
@@ -14,7 +20,7 @@ Do not commit or publish:
 
 ## Account Sharing
 
-Do not configure one person's NJTech account for everyone. Hidden credentials in scripts, encrypted files, browser profiles, cookie jars, servers, or proxy services still count as shared-account access. Each user must authenticate manually with their own authorized account on the official NJTech/CARSI/WebVPN page.
+Do not configure one person's NJTech account for everyone. Hidden credentials in scripts, encrypted files, browser profiles, cookie jars, servers, or proxy services still count as shared-account access. Each user must authenticate manually with their own authorized account on the official NJTech/CARSI/WebVPN page. A private cache for one user on one computer is acceptable; copying that cache to others is not.
 
 ## If Something Leaks
 
