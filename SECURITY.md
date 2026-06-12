@@ -6,7 +6,7 @@
 
 Local private session reuse is allowed for the same authorized user on the same computer. It can reuse local browser profiles, CARSI cookies, publisher cookies, WebVPN cookies, and storage state while the official session remains valid. It does not save your password.
 
-Local session reuse is still sensitive: reuse local session if valid, but do not share or commit cache, copy it to another person, upload it to GitHub, sync it to a public/cloud folder, place it inside the skill, or use it for代下 service. The session may expire whenever NJTech, CARSI, a publisher, MFA, or Cloudflare/Turnstile requires fresh authentication.
+Local session reuse is still sensitive: reuse local session if valid, but do not share or commit cache, paste it into chat, copy it to another person, upload it to GitHub, sync it to a public/cloud folder, place it inside the skill, or use it for代下 service. Local tools may read private cache on the same computer; agents and other users should not receive those values. The session may expire whenever NJTech, CARSI, a publisher, MFA, or Cloudflare/Turnstile requires fresh authentication.
 
 ## Do Not Commit
 

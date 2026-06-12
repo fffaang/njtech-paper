@@ -164,7 +164,9 @@ The agent should base64-encode the bytes inside `page.evaluate`, decode them in 
 | Symptom | What to do |
 |---|---|
 | `scansci-pdf not installed`, `command not found`, or `ModuleNotFoundError: scansci_pdf` | Run `python -m pip install "scansci-pdf[cloakbrowser,vpnsci]" pypdf`, then `scansci-pdf check`. |
+| `ModuleNotFoundError: bs4`, missing `beautifulsoup4`, or `No module named 'cloakbrowser'` | Run `python -m pip install --upgrade "scansci-pdf[cloakbrowser,vpnsci]" pypdf`; install into the same Python environment that runs `scansci-pdf`, then run `scansci-pdf check`. |
 | Install succeeds but `scansci-pdf` is not recognized | Activate the same virtual environment, use the matching Python, or reopen the terminal. |
+| The user is asked to log in every time | Confirm the same system user, Python environment, and `cache_dir` are being used; check whether cache was cleared or the session expired. |
 | NJTech WebVPN shows `ERR_CONNECTION_CLOSED` | Keep the proxy if Codex needs it, but launch Camofox/Chrome with `camofox_no_proxy=true` or `--no-proxy-server`. |
 | CARSI cannot find 南京工业大学 | Search `nanjing tech`. |
 | ScienceDirect through WebVPN returns CPE00001 | Use CARSI/OpenAthens instead of repeatedly retrying WebVPN. |
@@ -175,7 +177,7 @@ The agent should base64-encode the bytes inside `page.evaluate`, decode them in 
 
 - Each user needs their own valid NJTech institutional account and permission to access the requested publisher resource.
 - Do not configure one person's NJTech account for everyone.
-- Do not send account names, passwords, cookies, WebVPN tokens, verification codes, Cloudflare clearance values, browser profiles, or session files to the agent.
+- Do not paste, upload, print, export, or share account names, passwords, cookies, WebVPN tokens, verification codes, Cloudflare clearance values, browser profiles, storage state, or session files in chat or GitHub.
 - It is okay for your own computer to keep a private local session cache for reuse. Do not share or commit cache, browser profiles, login state, downloaded paper PDFs, signed ScienceDirect asset URLs, or private access artifacts to GitHub.
 - Credentials stay between the user and the official NJTech/CARSI/WebVPN login page.
 
@@ -191,7 +193,7 @@ No. The agent should open or guide the official browser flow only. Type your acc
 
 ### Why can one computer usually avoid repeated logins?
 
-After the first official login, `scansci-pdf` can reuse local session if valid by reading private cache/profile/cookie files on the same computer. This does not save your password, and it only works until the official session may expire.
+After the first official login, `scansci-pdf` can reuse local session if valid by reading private cache/profile/cookie files on the same computer. This local tool access is different from sending cookies to an agent or another person. It does not save your password, and it only works until the official session may expire.
 
 ### Can I guarantee I will never need to log in again?
 

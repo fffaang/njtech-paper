@@ -23,6 +23,9 @@ REQUIRED_PHRASES = {
         "reuse local session if valid",
         "session may expire",
         "do not share or commit cache",
+        "ModuleNotFoundError: bs4",
+        "No module named 'cloakbrowser'",
+        "install into the same Python environment",
     ],
     "SKILL.md": [
         "## Start Here",
@@ -39,6 +42,9 @@ REQUIRED_PHRASES = {
         "reuse local session if valid",
         "session may expire",
         "do not share or commit cache",
+        "ModuleNotFoundError: bs4",
+        "No module named 'cloakbrowser'",
+        "install into the same Python environment",
     ],
     "SECURITY.md": [
         "Do Not Commit",
@@ -54,6 +60,17 @@ REQUIRED_PHRASES = {
         "do not share or commit cache",
     ],
 }
+
+GITIGNORE_REQUIRED = [
+    ".scansci-pdf/",
+    "cache/",
+    "publisher_profile_*",
+    "browser_state*.json",
+    "carsi_cookies/",
+    "publisher_cookies.*",
+    "vpnsci-cookies.*",
+    "storage_state*.json",
+]
 
 FORBIDDEN_PATTERNS = {
     "Cloudflare clearance": re.compile(r"cf_clearance\s*=\s*[^;\s]+", re.I),
@@ -118,10 +135,18 @@ def check_forbidden_patterns() -> None:
                 raise AssertionError(f"{path.name} contains forbidden {label}: {snippet!r}")
 
 
+def check_gitignore_protections() -> None:
+    text = read_required(ROOT / ".gitignore")
+    missing = [pattern for pattern in GITIGNORE_REQUIRED if pattern not in text]
+    if missing:
+        raise AssertionError(f".gitignore missing cache/session protections: {missing}")
+
+
 def main() -> int:
     checks = [
         check_required_phrases,
         check_skill_frontmatter,
+        check_gitignore_protections,
         check_forbidden_patterns,
     ]
     for check in checks:
